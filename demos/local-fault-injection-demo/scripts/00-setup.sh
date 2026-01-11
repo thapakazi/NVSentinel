@@ -210,8 +210,8 @@ mongodb-store:
 
     image:
       registry: "docker.io"
-      repository: "bitnamilegacy/mongodb"
-      tag: "8.0.3-debian-12-r1"
+      repository: "bitnamisecure/mongodb"
+      tag: "latest"
       pullPolicy: "IfNotPresent"
 
     tls:
