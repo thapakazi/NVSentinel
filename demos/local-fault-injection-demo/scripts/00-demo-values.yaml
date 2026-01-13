@@ -1,0 +1,130 @@
+# Minimal NVSentinel configuration for local demo
+global:
+  dryRun: false
+
+  # Enable GPU health monitor for Error detection (works with fake DCGM)
+  gpuHealthMonitor:
+    enabled: true
+  syslogHealthMonitor:
+    enabled: false
+  cspHealthMonitor:
+    enabled: false
+  kubernetesObjectMonitor:
+    enabled: false
+
+  # Enable only core components needed for demo
+  platformConnector:
+    enabled: true
+    replicas: 1
+
+  faultQuarantine:
+    enabled: true
+    replicas: 1
+
+  # Disable other components
+  nodeDrainer:
+    enabled: false
+  faultRemediation:
+    enabled: false
+  healthEventsAnalyzer:
+    enabled: false
+  janitor:
+    enabled: false
+  labeler:
+    enabled: false  # Disabled to prevent removing our demo labels
+  metadataCollector:
+    enabled: false
+
+  # Enable MongoDB for event storage
+  mongodbStore:
+    enabled: true
+
+# Disable monitoring (no Prometheus in this demo)
+monitoring:
+  enabled: false
+
+# MongoDB Store configuration - copied from values-tilt.yaml (lines 73-184)
+mongodb-store:
+  useBitnami: true
+  usePerconaOperator: false
+
+  job:
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: ""
+    tolerations:
+      - operator: Exists
+
+  # Bitnami configuration
+  mongodb:
+    replicaCount: 1
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: ""
+
+    tolerations:
+    - operator: Exists
+
+    jobTolerations:
+    - operator: Exists
+
+    image:
+      registry: "docker.io"
+      repository: "bitnamilegacy/mongodb"
+      tag: "8.0.3-debian-12-r1"
+      pullPolicy: "IfNotPresent"
+
+    tls:
+      replicaset:
+        existingSecrets:
+          - "mongo-server-cert-0"
+
+      image:
+        registry: "docker.io"
+        repository: "bitnamilegacy/nginx"
+        tag: "1.27.2-debian-12-r2"
+        pullPolicy: "IfNotPresent"
+
+    metrics:
+      enabled: true
+      image:
+        registry: docker.io
+        repository: bitnamilegacy/mongodb-exporter
+        tag: 0.41.2-debian-12-r1
+
+    # Demo-specific overrides
+    auth:
+      enabled: true
+      rootPassword: "demo-password"
+    persistence:
+      enabled: false
+
+# Platform Connector configuration
+platformConnector:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+# Fault Quarantine configuration
+faultQuarantine:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+# Simple Health Client for injecting test events
+simpleHealthClient:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
